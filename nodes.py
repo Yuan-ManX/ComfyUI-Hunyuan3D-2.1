@@ -65,8 +65,28 @@ class Hunyuan3DShapeGeneration:
         return (mesh_untextured,)
 
 
+class Hunyuan3DTexureSynthsis:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "mesh_untextured": ("MESH",),
+                "max_num_view": ("INT", {"default": 6}),
+                "resolution": ("INT", {"default": 512}),
+            }
+        }
+
+    RETURN_TYPES = ("TEXURE",)
+    RETURN_NAMES = ("mesh_textured",)
+    FUNCTION = "generate"
+    CATEGORY = "Hunyuan3D-2.1"
+
+    def generate(self, image, mesh_untextured, max_num_view, resolution):
+        mesh_path = mesh_untextured
+        paint_pipeline = Hunyuan3DPaintPipeline(Hunyuan3DPaintConfig(max_num_view=max_num_view, resolution=resolution))
+        mesh_textured = paint_pipeline(mesh_path, image_path=image)
+        
+        return (mesh_textured,)
 
 
-
-paint_pipeline = Hunyuan3DPaintPipeline(Hunyuan3DPaintConfig(max_num_view=6, resolution=512))
-mesh_textured = paint_pipeline(mesh_path, image_path='assets/demo.png')
