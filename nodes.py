@@ -1,6 +1,6 @@
 from hy3dpaint.textureGenPipeline import Hunyuan3DPaintPipeline
-from textureGenPipeline import Hunyuan3DPaintPipeline, Hunyuan3DPaintConfig
-from hy3dshape.pipelines import Hunyuan3DDiTFlowMatchingPipeline
+from hy3dpaint.textureGenPipeline import Hunyuan3DPaintPipeline, Hunyuan3DPaintConfig
+from hy3dshape.hy3dshape.pipelines import Hunyuan3DDiTFlowMatchingPipeline
 
 
 class LoadHunyuan3DModel:
@@ -14,22 +14,59 @@ class LoadHunyuan3DModel:
         }
 
     RETURN_TYPES = ("MODEL",)
-    RETURN_NAMES = ("shape_pipeline",)
+    RETURN_NAMES = ("model",)
     FUNCTION = "load_model"
     CATEGORY = "Hunyuan3D-2.1"
 
     def load_model(self, model_path):
-        shape_pipeline = Hunyuan3DDiTFlowMatchingPipeline.from_pretrained('tencent/Hunyuan3D-2.1')
+        model = Hunyuan3DDiTFlowMatchingPipeline.from_pretrained('tencent/Hunyuan3D-2.1')
         
-        return (shape_pipeline,)
+        return (model,)
+
+
+class LoadHunyuan3DImage:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "image_path": ("STRING", {"default": "assets/demo.png"}),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
+    FUNCTION = "input_image"
+    CATEGORY = "Hunyuan3D-2.1"
+
+    def input_image(self, image_path):
+        image = image_path
+        return (image,)
+
+
+class Hunyuan3DShapeGeneration:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "model": ("MODEL",),
+                "image": ("IMAGE",),
+            }
+        }
+
+    RETURN_TYPES = ("MESH",)
+    RETURN_NAMES = ("mesh_untextured",)
+    FUNCTION = "generate"
+    CATEGORY = "Hunyuan3D-2.1"
+
+    def generate(self, model, image):
+        shape_pipeline = model
+        mesh_untextured = shape_pipeline(image=image)[0]
+        
+        return (mesh_untextured,)
 
 
 
 
-
-# let's generate a mesh first
-shape_pipeline = Hunyuan3DDiTFlowMatchingPipeline.from_pretrained('tencent/Hunyuan3D-2.1')
-mesh_untextured = shape_pipeline(image='assets/demo.png')[0]
 
 paint_pipeline = Hunyuan3DPaintPipeline(Hunyuan3DPaintConfig(max_num_view=6, resolution=512))
 mesh_textured = paint_pipeline(mesh_path, image_path='assets/demo.png')
